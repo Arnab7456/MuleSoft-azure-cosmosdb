@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:azure-cosmos-db-connector-mule-4="http://www.mulesoft.org/schema/mule/azure-cosmos-db-connector-mule-4"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/azure-cosmos-db-connector-mule-4 http://www.mulesoft.org/schema/mule/azure-cosmos-db-connector-mule-4/current/mule-azure-cosmos-db-connector-mule-4.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<configuration-properties 
+    doc:name="Configuration properties"
+    file="config.properties"/>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="49a5ae0d-5186-4016-bdce-ab003b7a226f" >
+		<http:listener-connection host="${http.host}" port="${http.port}" />
+	</http:listener-config>
+	<azure-cosmos-db-connector-mule-4:key-token-config name="Azure_Cosmos_Db_Key_Token_Config" doc:name="Azure Cosmos Db Key Token Config" doc:id="1df0f514-d490-4e5c-ad3a-f97126d218f6" >
+		<azure-cosmos-db-connector-mule-4:key-token-auth-connection baseUri="${cosmos.baseUri}" key="${cosmos.key}" version="${cosmos.version}" />
+	</azure-cosmos-db-connector-mule-4:key-token-config>
+	<flow name="az-cosmosFlow" doc:id="642f12d5-9141-4d55-a13b-4e184f978151" >
+		<http:listener doc:name="Listener" doc:id="0ee14965-280d-4338-a1a0-2cdac189f233" config-ref="HTTP_Listener_config" path="/get-document/partition/{partitionKey}/doc/{docId}"/>
+		<azure-cosmos-db-connector-mule-4:get-document doc:name="Get Document" doc:id="e9afb3f6-7870-41ca-8bd9-3e0f9ff285e2" config-ref="Azure_Cosmos_Db_Key_Token_Config" dbIdUriParam="StoreDatabase" collIdUriParam="Products" docIdUriParam="#[attributes.uriParams.docId]" xMsDocumentdbPartitionkeyHeader='#["[\"" ++ attributes.uriParams.partitionKey ++ "\"]"]'/>
+		<ee:transform doc:name="Transform Message" doc:id="55cad53d-1d47-49de-bf82-8e8271f71632" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="5777cb91-bbab-43a2-b72c-ae483b324061" message="#[payload]"/>
+		<error-handler ref="globalError_Handler" />
+	</flow>
+	<flow name="az-cosmosFlow1" doc:id="178e2702-440c-41f9-925c-dfec380cc7f2" >
+		<http:listener doc:name="Listener" doc:id="41739574-a604-46c2-9f76-c4b8f98b8928" config-ref="HTTP_Listener_config" path="/list"/>
+		<try doc:name="Try" doc:id="ce416e93-6310-403c-97d2-f197b42cb647" >
+			<azure-cosmos-db-connector-mule-4:list-documents doc:name="List Documents" doc:id="a628b100-7554-4583-9c95-9e154c7f216a" config-ref="Azure_Cosmos_Db_Key_Token_Config" dbIdUriParam="StoreDatabase" collIdUriParam="Products" />
+		</try>
+		<ee:transform doc:name="Transform Message" doc:id="0912f29c-ece1-471a-9441-9d5fed0ff01c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler ref="globalError_Handler" />
+	</flow>
+	<flow name="az-cosmosFlow2" doc:id="849f22ac-5c21-40dc-a3f4-a15d1a1cb231" >
+		<http:listener doc:name="Listener" doc:id="e4997520-0ae9-49d4-92cc-08e045034c47" config-ref="HTTP_Listener_config" path="/create/partition/{partitionKey}"/>
+		<azure-cosmos-db-connector-mule-4:create-document doc:name="Create Document" doc:id="855f4e58-1318-44cb-8f46-c14e72b51c7e" config-ref="Azure_Cosmos_Db_Key_Token_Config" dbIdUriParam="StoreDatabase" collIdUriParam="Products" xMsDocumentdbPartitionkeyHeader='#["[\"" ++ attributes.uriParams.partitionKey ++ "\"]"]'>
+			<azure-cosmos-db-connector-mule-4:create-document-body ><![CDATA[#[%dw 2.0
+output application/json
+---
+payload]]]></azure-cosmos-db-connector-mule-4:create-document-body>
+		</azure-cosmos-db-connector-mule-4:create-document>
+		<ee:transform doc:name="Transform Message" doc:id="ea2bc514-f7a5-4b0c-8bbd-b42f56754372" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler ref="globalError_Handler" />
+	</flow>
+</mule>

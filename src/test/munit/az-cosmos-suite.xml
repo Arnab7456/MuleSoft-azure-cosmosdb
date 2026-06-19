@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	
+	<munit:config name="az-cosmos-test-suite-config" />
+
+	<munit:test name="az-cosmosFlow-success-test" doc:id="06f31229-10cc-493a-91ef-422475e04473" description="Test success scenario for getting a document">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Get Document" doc:id="4efe5fb8-d177-4b23-a0c1-c1a9f97a9dbf" processor="azure-cosmos-db-connector-mule-4:get-document">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute attributeName="doc:name" whereValue="Get Document" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='{ "id": "prod123", "name": "Laptop", "category": "Electronics" }' mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event with URI Params" doc:id="0960f119-d89c-4957-addd-d99215c688c4" >
+				<munit:attributes value="#[{ uriParams: { partitionKey: 'Electronics', docId: 'prod123' } }]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow Reference to az-cosmosFlow" doc:id="f077a89c-189b-4b4d-8321-78c04022c80a" name="az-cosmosFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert Document ID" doc:id="ed787894-c8ce-4e72-bb9a-e9fbe311cb26" expression="#[payload.id]" is='#[munit-tools:equalTo("prod123")]' message="The document ID does not match!"/>
+			<munit-tools:assert-that doc:name="Assert Document Name" doc:id="ff736c43-d459-49d9-9c7f-2cd138e653da" expression="#[payload.name]" is='#[munit-tools:equalTo("Laptop")]' message="The product name does not match!"/>
+		</munit:validation>
+	</munit:test>
+
+	<munit:test name="az-cosmosFlow1-success-test" doc:id="7119faac-1fc7-48a6-bc7e-747e9962fd3d" description="Test success scenario for listing documents">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock List Documents" doc:id="64b4abfb-a1bd-4e9d-a6f6-46fbf0367b6f" processor="azure-cosmos-db-connector-mule-4:list-documents">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute attributeName="doc:name" whereValue="List Documents" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='[{"id": "prod123", "name": "Laptop"}, {"id": "prod124", "name": "Mouse"}]' mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow Reference to az-cosmosFlow1" doc:id="9106ef96-f294-47a4-aaf5-f660f5454b45" name="az-cosmosFlow1"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert Response Is List" doc:id="0f900d91-27fa-400e-8544-996d8e576ed9" expression="#[sizeOf(payload)]" is='#[munit-tools:equalTo(2)]' message="The list size is incorrect!"/>
+		</munit:validation>
+	</munit:test>
+
+	<munit:test name="az-cosmosFlow2-success-test" doc:id="98cefe85-f303-44f2-b8ac-3cfa50219e0e" description="Test success scenario for creating a document">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Create Document" doc:id="0767037f-9990-4fd9-a355-7d288bf514a0" processor="azure-cosmos-db-connector-mule-4:create-document">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute attributeName="doc:name" whereValue="Create Document" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='{ "id": "prod999", "status": "Created" }' mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event with Payload and URI Param" doc:id="18df077a-d4cc-4f46-9553-fa579f422b4b" >
+				<munit:payload value='{ "id": "prod999", "name": "Keyboard", "category": "Electronics" }' mediaType="application/json" />
+				<munit:attributes value="#[{ uriParams: { partitionKey: 'Electronics' } }]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow Reference to az-cosmosFlow2" doc:id="edd59256-ca4b-4a8b-bad1-7ca1d147a08e" name="az-cosmosFlow2"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert Creation Status" doc:id="f7452337-1bce-4bc2-9bce-3e305541ff26" expression="#[payload.status]" is='#[munit-tools:equalTo("Created")]' message="Document creation status validation failed!"/>
+		</munit:validation>
+	</munit:test>
+
+</mule>

@@ -94,6 +94,6 @@ curl -X GET http://localhost:8081/list
 
 ## Project Structure & Flow Overview
 
-* **`az-cosmosFlow`**: Listens on `/get-document/...`, invokes the `get-document` operation by mapping the `x-ms-documentdb-partitionkey` header dynamically, transforms the response to JSON, and logs the payload.
-* **`az-cosmosFlow1`**: Listens on `/list`, wraps the `list-documents` operation inside a `try` scope for localized error isolation, and outputs the list as a JSON array.
-* **`az-cosmosFlow2`**: Listens on `/create/...`, processes incoming JSON body text, executes the `create-document` operation using the dynamic partition path variable, and returns the metadata of the created item.
+* **`get-document-flow`**: Listens on `/get-document/...`, invokes the `get-document` operation by mapping the `x-ms-documentdb-partitionkey` header dynamically, transforms the response to JSON, and logs a non-sensitive completion message.
+* **`list-documents-flow`**: Listens on `/list`, wraps the `list-documents` operation inside a `try` scope for localized error isolation, and outputs the list as a JSON array.
+* **`create-document-flow`**: Listens on `/create/...`, processes incoming JSON body text, executes the `create-document` operation using the dynamic partition path variable, and returns the metadata of the created item.

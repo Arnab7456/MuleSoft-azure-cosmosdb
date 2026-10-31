@@ -25,7 +25,7 @@
 			<munit:set-event doc:name="Set Event with URI Params" doc:id="0960f119-d89c-4957-addd-d99215c688c4" >
 				<munit:attributes value="#[{ uriParams: { partitionKey: 'Electronics', docId: 'prod123' } }]" />
 			</munit:set-event>
-			<flow-ref doc:name="Flow Reference to az-cosmosFlow" doc:id="f077a89c-189b-4b4d-8321-78c04022c80a" name="az-cosmosFlow"/>
+			<flow-ref doc:name="Flow Reference to get-document-flow" doc:id="f077a89c-189b-4b4d-8321-78c04022c80a" name="get-document-flow"/>
 		</munit:execution>
 		<munit:validation >
 			<munit-tools:assert-that doc:name="Assert Document ID" doc:id="ed787894-c8ce-4e72-bb9a-e9fbe311cb26" expression="#[payload.id]" is='#[munit-tools:equalTo("prod123")]' message="The document ID does not match!"/>
@@ -45,7 +45,7 @@
 			</munit-tools:mock-when>
 		</munit:behavior>
 		<munit:execution >
-			<flow-ref doc:name="Flow Reference to az-cosmosFlow1" doc:id="9106ef96-f294-47a4-aaf5-f660f5454b45" name="az-cosmosFlow1"/>
+			<flow-ref doc:name="Flow Reference to list-documents-flow" doc:id="9106ef96-f294-47a4-aaf5-f660f5454b45" name="list-documents-flow"/>
 		</munit:execution>
 		<munit:validation >
 			<munit-tools:assert-that doc:name="Assert Response Is List" doc:id="0f900d91-27fa-400e-8544-996d8e576ed9" expression="#[sizeOf(payload)]" is='#[munit-tools:equalTo(2)]' message="The list size is incorrect!"/>
@@ -68,7 +68,7 @@
 				<munit:payload value='{ "id": "prod999", "name": "Keyboard", "category": "Electronics" }' mediaType="application/json" />
 				<munit:attributes value="#[{ uriParams: { partitionKey: 'Electronics' } }]" />
 			</munit:set-event>
-			<flow-ref doc:name="Flow Reference to az-cosmosFlow2" doc:id="edd59256-ca4b-4a8b-bad1-7ca1d147a08e" name="az-cosmosFlow2"/>
+			<flow-ref doc:name="Flow Reference to create-document-flow" doc:id="edd59256-ca4b-4a8b-bad1-7ca1d147a08e" name="create-document-flow"/>
 		</munit:execution>
 		<munit:validation >
 			<munit-tools:assert-that doc:name="Assert Creation Status" doc:id="f7452337-1bce-4bc2-9bce-3e305541ff26" expression="#[payload.status]" is='#[munit-tools:equalTo("Created")]' message="Document creation status validation failed!"/>

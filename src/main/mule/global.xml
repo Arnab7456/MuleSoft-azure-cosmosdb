@@ -5,7 +5,7 @@
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
 	<error-handler name="globalError_Handler" doc:id="90dc3635-6ade-42ff-8e88-6224f49d73f3" >
 		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="b5288e99-b3f1-4faa-9678-dda3b789a31d" type="ANY">
-			<logger level="INFO" doc:name="Logger" doc:id="35a51b60-a35b-4a5c-8195-32ab1163b774" message="error.description"/>
+			<logger level="ERROR" doc:name="Logger" doc:id="35a51b60-a35b-4a5c-8195-32ab1163b774" message="#[error.description]"/>
 		</on-error-propagate>
 	</error-handler>
 </mule>
